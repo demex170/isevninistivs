@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>სიყვარულის მობილური ❤️</title>
+    <style>
+        :root {
+            --primary-pink: #ff4d88;
+            --dark-pink: #e6005c;
+            --glass: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.4);
+        }
+
+        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #121212; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+
+        .phone { width: 360px; height: 740px; background: #000; border-radius: 50px; border: 10px solid #222; box-shadow: 0 0 60px rgba(255, 77, 136, 0.4); overflow: hidden; display: flex; flex-direction: column; position: relative; }
+
+        .status-bar { height: 45px; color: white; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; font-size: 14px; z-index: 100; background: rgba(0,0,0,0.2); }
+
+        .screen { flex: 1; background: linear-gradient(160deg, #ff99aa 0%, #ff4d88 100%); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+
+        /* Notification */
+        #notification {
+            position: absolute; top: -100px; left: 10px; right: 10px; 
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 10px; z-index: 5000;
+            transition: top 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+        #notification.show { top: 50px; }
+        .notif-icon { width: 40px; height: 40px; background: var(--primary-pink); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+
+        /* Lock Screen */
+        #lockScreen { position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=360&q=80'); background-size: cover; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; transition: transform 0.8s ease-in-out; }
+        .lock-content { background: var(--glass); backdrop-filter: blur(15px); padding: 30px; border-radius: 30px; border: 1px solid var(--glass-border); text-align: center; color: white; }
+        #codeInput { padding: 12px; width: 140px; border-radius: 12px; border: none; text-align: center; font-size: 22px; letter-spacing: 5px; margin: 15px 0; outline: none; }
+
+        /* Main Screen */
+        #mainScreen { display: none; flex-direction: column; align-items: center; padding: 20px; height: 100%; overflow-y: auto; }
+        .profile-img { width: 110px; height: 110px; border-radius: 50%; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.2); margin: 5px 0 15px 0; object-fit: cover; }
+
+        .app-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px 15px; width: 100%; padding-bottom: 20px; }
+        .app { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .app-icon { width: 65px; height: 65px; background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 5px; transition: 0.3s; }
+        .app:hover .app-icon { transform: scale(1.1); background: rgba(255, 255, 255, 0.4); }
+        .app span { color: white; font-size: 11px; font-weight: 600; text-align: center; }
+
+        /* Popup */
+        .popup { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.7); width: 85%; max-height: 85%; background: white; border-radius: 25px; padding: 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); z-index: 2000; display: none; opacity: 0; transition: 0.3s ease-out; }
+        .popup.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        
+        /* Popup-ის შიგთავსი სქროლით */
+        #popupContent { 
+            font-size: 15px; 
+            color: #333; 
+            line-height: 1.5; 
+            max-height: 420px; 
+            overflow-y: auto; 
+            padding-right: 5px;
+        }
+        
+        /* სქროლის ვიზუალი */
+        #popupContent::-webkit-scrollbar { width: 4px; }
+        #popupContent::-webkit-scrollbar-thumb { background: var(--primary-pink); border-radius: 10px; }
+
+        /* ჩატი */
+        .chat-box { display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 14px; border-radius: 18px; font-size: 14px; max-width: 85%; position: relative; }
+        .msg.r { background: var(--primary-pink); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg.l { background: #f0f0f0; color: #000; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .reply-meta { font-size: 11px; background: rgba(0,0,0,0.08); padding: 5px 8px; border-radius: 10px; margin-bottom: 5px; display: block; border-left: 3px solid var(--primary-pink); color: #555; }
+
+        .surprise-text { font-size: 17px !important; color: #d6006e; line-height: 1.5; text-align: left; }
+
+        .close-btn { margin-top: 20px; width: 100%; padding: 12px; background: var(--primary-pink); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+
+        /* გალერეა */
+        .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding-bottom: 10px; }
+        .gallery-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 5px; cursor: pointer; }
+        
+        #fullImgOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; z-index: 6000; justify-content: center; align-items: center; }
+        #fullImgOverlay img { max-width: 90%; max-height: 80%; border-radius: 10px; }
+
+        @keyframes fly { to { transform: translateY(-600px); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<div class="phone">
+    <div id="notification">
+        <div class="notif-icon">❤️</div>
+        <div class="notif-text"><b>დემეტრე</b><span>ნინი, ძალიან მიყვარხარ! ✨</span></div>
+    </div>
+
+    <div class="status-bar">
+        <div id="clock">00:00</div>
+        <div>📶 🔋 100%</div>
+    </div>
+
+    <div class="screen">
+        <div id="lockScreen">
+            <div class="lock-content">
+                <h2>სიყვარულის მობილური</h2>
+                <input type="password" id="codeInput" placeholder="****" maxlength="4">
+                <br>
+                <button onclick="unlock()" style="padding:10px 20px; border-radius:10px; border:none; background:white; color:#e6005c; font-weight:bold; cursor:pointer;">შესვლა</button>
+                <p id="lockError" style="color: #ffdde1; font-size: 12px; margin-top: 10px;"></p>
+            </div>
+        </div>
+
+        <div id="mainScreen">
+            <img src="photo.jpg" class="profile-img" alt="პროფილი">
+            <div class="app-container">
+                <div class="app" onclick="openPopup('location')"><div class="app-icon">📍</div><span>ადგილი</span></div>
+                <div class="app" onclick="openPopup('dates')"><div class="app-icon">📅</div><span>თარიღები</span></div>
+                <div class="app" onclick="openSecret()"><div class="app-icon">🔒</div><span>საიდუმლო</span></div>
+                <div class="app" onclick="spawnHearts()"><div class="app-icon">❤️</div><span>გულები</span></div>
+                <div class="app" onclick="openPopup('chat')"><div class="app-icon">💬</div><span>ჩატი</span></div>
+                <div class="app" onclick="openPopup('surprise')"><div class="app-icon">🎁</div><span>სიურპრიზი</span></div>
+                <div class="app" onclick="openLoveMeter()"><div class="app-icon">📈</div><span>საზომი</span></div>
+                <div class="app" onclick="openWish()"><div class="app-icon">✨</div><span>სურვილი</span></div>
+                <div class="app" onclick="window.open('https://youtube.com', '_blank')"><div class="app-icon">▶️</div><span>YouTube</span></div>
+                <div class="app" onclick="openPopup('contacts')"><div class="app-icon">📇</div><span>კონტაქტები</span></div>
+                <div class="app" onclick="openPopup('family')"><div class="app-icon">🏠</div><span>ოჯახური</span></div>
+                <div class="app" onclick="openPopup('gallery')"><div class="app-icon">📸</div><span>გალერეა</span></div>
+            </div>
+            <audio id="bgMusic" loop><source src="music.mp3" type="audio/mpeg"></audio>
+        </div>
+
+        <div id="popup" class="popup">
+            <h3 id="popupTitle" style="color:#e6005c; margin-top:0;"></h3>
+            <div id="popupContent"></div>
+            <button class="close-btn" onclick="closePopup()">დახურვა</button>
+        </div>
+    </div>
+</div>
+
+<div id="fullImgOverlay" onclick="this.style.display='none'"><img src="" id="fullImg"></div>
+
+<script>
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    }
+    setInterval(updateClock, 1000); updateClock();
+
+    function unlock() {
+        if(document.getElementById("codeInput").value === "0322") {
+            document.getElementById('lockScreen').style.transform = "translateY(-100%)";
+            document.getElementById('mainScreen').style.display = "flex";
+            
+            const music = document.getElementById('bgMusic');
+            music.play().catch(e => {});
+
+            setTimeout(() => {
+                document.getElementById('notification').classList.add('show');
+                setTimeout(() => document.getElementById('notification').classList.remove('show'), 4000);
+            }, 1000);
+        } else { document.getElementById('lockError').innerText = "არასწორია ❌"; }
+    }
+
+    const data = {
+        location: {t: "📍 ადგილი", c: "მალე გვექნება... ✨"},
+        dates: {t: "📅 თარიღები", c: `გაცნობა: 03-12-2025<br>ერთად: ${Math.floor((Date.now()-new Date("2025-12-03"))/86400000)} დღე ❤️`},
+        chat: {t: "💬 ჩატი", c: `<div class="chat-box">
+            <div class="msg r">Ai dzaaan laavvvv raa</div>
+            <div class="msg l">😆😆😆</div>
+            <div class="msg r">მეცო მაინც, გეთქვა გამიხარდებოდა</div>
+            <div class="msg l">უი, ბოდიში წამალს ვსმადი</div>
+            <div class="msg l"><span class="reply-meta">მეცო მაინც, გეთქვა გამიხარდებოდა</span>მეცცც ❤️</div>
+        </div>`},
+        surprise: {t: "🎁 სიურპრიზი", c: `<div class="surprise-text">მოკლედ 22 ოქტომბრის საღამოა, უჩვეულო, არაფრით განსაკუთრებული - მხოლოდ ბარსას თამაში იყო. შემოხვედი ჩატში, მოვიხიბლე, თან ბარსას ფანი იყავი. მე მეგონა ეს გოგოს უბრალოდ - რიგითი და ჩვეულებრივად გააგრძელებდა ცხოვრებას, მაგრამ არა ! შენ განსაკუთრებული ხარ, პირდაპირ მეგობრულად და გამგებიანად მომიდექი, მაგრძნობინე ძალიან დიდი სითბო და სიყვარული. შემდეგ მოვიდა 2 დეკემბერი, საღამოს 6ის 33 წუთი, როცა გავბედე და მიყვარდი, ჩემთის საბედნიეროდ ეს ყველაფერი კარგად დამთავრდა, რადგან შენც იმავეს ფიქრობდი ჩემზე, რაზეც მე შენზე. ახლა კი ბედნიერი ვარ, ვიყავი, ვიქნები შენთან ერთად. მინდა გითხრა, რომ საუკეთესო ხარ. ყველა შენნაირი არ არის. მინდა, რომ დიდხანს მყავდე, ძალიან დიდხანს. მიყვარხარ უზომოდ.</div>`},
+        contacts: {t: "📇 კონტაქტები", c: "📞 დემეტრე: 579 08 97 19<br>📞 ნინი: 511 19 32 56"},
+        family: {t: "🏠 ოჯახური", c: "1. კიკიკიკი ✅<br>2. სიყვარული ახსნა ✅<br>3. პირველი კამათი ✅<br>4. ბავშვების სახელები ✅<br>5. დამორჩილება ⏳"},
+        gallery: {t: "📸 გალერეა", c: `<div class="gallery-grid">${Array.from({length: 29}, (_, i) => `<img src="photo${i+1}.jpg" onclick="viewImage(this.src)" onerror="this.src='https://via.placeholder.com/100/ff4d88/ffffff?text=❤️'">`).join('')}</div>`}
+    };
+
+    function openPopup(key) {
+        document.getElementById('popupTitle').innerText = data[key].t;
+        document.getElementById('popupContent').innerHTML = data[key].c;
+        showPopup();
+    }
+
+    function showPopup() {
+        const p = document.getElementById('popup');
+        p.style.display = "block"; 
+        setTimeout(() => p.classList.add('show'), 10);
+        document.getElementById('popupContent').scrollTop = 0; // ყოველთვის თავიდან დაიწყოს
+    }
+
+    function closePopup() {
+        const p = document.getElementById('popup');
+        p.classList.remove('show'); 
+        setTimeout(() => p.style.display = "none", 300);
+    }
+
+    let sIndex = 0;
+    const sChat = [{s:"r", m:"ნინი, შენ ჩემი სიყვარული ხარ 💖"}, {s:"l", m:"მეც ძალიან ბედნიერი ვარ 😘"}, {s:"r", m:"მიყვარხარ უზომოდ ❤️"}, {s:"l", m:"რაღაც საოცარი ხარ 💕"}];
+    function openSecret() {
+        document.getElementById('popupTitle').innerText = "🔒 საიდუმლო";
+        let html = '<div class="chat-box">';
+        let limit = (sIndex % sChat.length) + 1;
+        for(let i=0; i < limit; i++) { html += `<div class="msg ${sChat[i].s}">${sChat[i].m}</div>`; }
+        html += '</div>';
+        document.getElementById('popupContent').innerHTML = html;
+        showPopup();
+        sIndex++;
+    }
+
+    function openLoveMeter() {
+        document.getElementById('popupTitle').innerText = "📈 სიყვარულის საზომი";
+        document.getElementById('popupContent').innerHTML = `
+            <div style="text-align:center;">
+                <p>რამდენად მიყვარს ნინი?</p>
+                <div style="width:100%; height:15px; background:#eee; border-radius:10px; overflow:hidden; margin:10px 0;">
+                    <div id="fill" style="width:0%; height:100%; background:#ff4d88; transition:width 2s;"></div>
+                </div>
+                <h2 id="perc">0%</h2>
+                <button onclick="startMeasure()" style="background:#ff4d88; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">გაზომვა</button>
+            </div>`;
+        showPopup();
+    }
+
+    function startMeasure() {
+        document.getElementById('fill').style.width = "100%";
+        let c = 0; let inv = setInterval(() => {
+            c++; document.getElementById('perc').innerText = c + "%";
+            if(c>=100) { clearInterval(inv); document.getElementById('perc').innerText = "UNLIMITED ❤️"; }
+        }, 20);
+    }
+
+    function openWish() {
+        document.getElementById('popupTitle').innerText = "✨ სურვილების ბარათი";
+        document.getElementById('popupContent').innerHTML = `
+            <p>ამოირჩიე შენი დღევანდელი საჩუქარი დემეტრესგან:</p>
+            <button onclick="getWish()" style="background:#e6005c; color:white; border:none; padding:10px; border-radius:10px; width:100%; cursor:pointer;">ბარათის ამოღება</button>
+            <div id="wishResult" style="display:none; margin-top:15px; padding:15px; border:2px dashed #ff4d88; border-radius:15px; text-align:center; background:#fff0f5;"></div>
+        `;
+        showPopup();
+    }
+
+    function getWish() {
+        const wishes = ["ერთი თბილი ჩახუტება 🤗", "შენი საყვარელი შოკოლადი 🍫", "რომანტიკული ვახშამი 🕯️", "ბევრი ბევრი კოცნა 💋", "სიურპრიზი საჩუქარი 🎁", "კინოში წასვლა 🍿"];
+        document.getElementById('wishResult').innerText = wishes[Math.floor(Math.random() * wishes.length)];
+        document.getElementById('wishResult').style.display = "block";
+    }
+
+    function viewImage(src) { document.getElementById('fullImg').src = src; document.getElementById('fullImgOverlay').style.display = "flex"; }
+    
+    function spawnHearts() {
+        for(let i=0; i<15; i++) {
+            setTimeout(() => {
+                const h = document.createElement('div');
+                h.style.cssText = `position:absolute; left:${Math.random()*80+10}%; top:80%; font-size:25px; animation: fly 3s forwards; pointer-events:none; z-index:5000;`;
+                h.innerHTML = '❤️'; document.querySelector('.screen').appendChild(h);
+                setTimeout(() => h.remove(), 3000);
+            }, i * 100);
+        }
+    }
+</script>
+<style> @keyframes fly { to { transform: translateY(-600px); opacity: 0; } } </style>
+</body>
+</html>
